@@ -1,5 +1,5 @@
 using DexChen.UI.Providers;
-using DexChen.UI.Services;
+using DexChen.UI.Services.Contract;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -14,7 +14,7 @@ namespace DexChen.UI.Pages
         private bool showPassword = false;
 
         
-        [Inject] private AuthService AuthService { get; set; } = default!;
+        [Inject] private IAuthService AuthService { get; set; } = default!;
         [Inject] private NavigationManager Navigation { get; set; } = default!;
         [Inject] private AuthenticationStateProvider AuthProvider { get; set; } = default!;
         private void TogglePasswordVisibility()
