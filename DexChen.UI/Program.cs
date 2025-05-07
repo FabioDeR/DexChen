@@ -34,8 +34,8 @@ builder.Services.AddScoped<Supabase.Client>(provider =>
     };
 
     var client = new Supabase.Client(
-        "https://vggeoanoulfthyvjhhhs.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnZ2VvYW5vdWxmdGh5dmpoaGhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0ODE0NjQsImV4cCI6MjA2MjA1NzQ2NH0.oTYdvT_EOI1g5GzxWVRSiUYLRynF-zDV7eAZvPzpE4U",
+        "",
+        "",
         options
     );
     client.InitializeAsync();
