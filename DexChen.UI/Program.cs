@@ -2,58 +2,56 @@
 using DexChen.UI;
 using DexChen.UI.Providers;
 using DexChen.UI.Services;
+using DexChen.UI.Services.Contract;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Supabase;
+using System.Net.Http.Json;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// 🔹 HttpClient pour appels API ou fichier JSON
-builder.Services.AddScoped(_ => new HttpClient
-{
-    BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
-});
+// 🔹 HttpClient principal
+builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-// 🔹 LocalStorage pour la session Supabase
+// 🔹 LocalStorage (nécessaire pour la session Supabase)
 builder.Services.AddBlazoredLocalStorage();
 
-// Replace the existing registration of Supabase.Client with the following code:
-builder.Services.AddScoped<Supabase.Client>(provider =>
-{
-    var localStorage = provider.GetRequiredService<ILocalStorageService>();
-    var logger = provider.GetRequiredService<ILogger<CustomSupabaseSessionHandler>>();
 
-    var options = new SupabaseOptions
-    {
-        AutoRefreshToken = true,
-        AutoConnectRealtime = false,
-        SessionHandler = new CustomSupabaseSessionHandler(localStorage, logger)
-    };
+// 🔹 Charger la config Supabase depuis appsettings.json
+var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
+var config = await http.GetFromJsonAsync<Dictionary<string, string>>("appsettings.json");
 
-    var client = new Supabase.Client(
-        "",
-        "",
-        options
-    );
-    client.InitializeAsync();
-    return client;
-});
+var url = config["SUPABASE_URL"];
+var key = config["SUPABASE_KEY"];
 
-// 🔹 Auth provider personnalisé
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>(provider =>
-    new CustomAuthStateProvider(
-        provider.GetRequiredService<ILocalStorageService>(),
-        provider.GetRequiredService<Supabase.Client>(),
-        provider.GetRequiredService<ILogger<CustomAuthStateProvider>>()
+// ---------- BLAZOR AUTH
+
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+
+builder.Services.AddAuthorizationCore();
+
+// 🔹 Enregistrer Supabase.Client avec SessionHandler
+builder.Services.AddScoped<Client>(
+    provider => new Client(
+        url,
+        key,
+        new SupabaseOptions
+        {
+            AutoRefreshToken = true,
+            AutoConnectRealtime = false,
+            SessionHandler = new CustomSupabaseSessionHandler(
+                provider.GetRequiredService<ILocalStorageService>(),
+                provider.GetRequiredService<ILogger<CustomSupabaseSessionHandler>>()
+            )
+        }
     )
 );
 
-// 🔹 Auth + autorisation Blazor
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddAuthorizationCore();
+// 🔹 Services et providers liés à l'authentification
+builder.Services.AddScoped<IAuthService,AuthService>();
 
-// 🔹 Lancer l'app
+// ✅ Lancer l'application
 await builder.Build().RunAsync();

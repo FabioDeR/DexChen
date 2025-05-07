@@ -1,68 +1,58 @@
-﻿using Blazored.LocalStorage;
+﻿using DexChen.UI.Services;
+using DexChen.UI.Services.Contract;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using System.Text.Json;
 
-namespace DexChen.UI.Providers
+namespace DexChen.UI.Providers;
+
+public class CustomAuthStateProvider : AuthenticationStateProvider
 {
-    public class CustomAuthStateProvider : AuthenticationStateProvider
+    private readonly IAuthService _authService;
+    private readonly ILogger<CustomAuthStateProvider> _logger;
+    private readonly Supabase.Client _client;
+
+    public CustomAuthStateProvider(IAuthService authService, ILogger<CustomAuthStateProvider> logger, Supabase.Client client)
     {
-        private readonly ILocalStorageService _localStorage;
-        private readonly Supabase.Client _client;
+        _authService = authService;
+        _logger = logger;
+        _client = client;
+    }
 
-        private readonly ILogger<CustomAuthStateProvider> _logger;
-
-        public CustomAuthStateProvider(
-            ILocalStorageService localStorage,
-            Supabase.Client client,
-            ILogger<CustomAuthStateProvider> logger
-        )
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+    {
+        try
         {
-            logger.LogInformation("------------------- CONSTRUCTOR -------------------");
+            _logger.LogInformation("[AuthStateProvider] GetAuthenticationStateAsync");
 
-            _localStorage = localStorage;
-            _client = client;
-            _logger = logger;
-        }
+            // Obtenez les claims à partir du service d'auth
+            // Sets client auth and connects to realtime (if enabled)
+            var claims = await _authService.GetLoginClaimsAsync();
 
-        public override Task<AuthenticationState> GetAuthenticationStateAsync()
-        {
-            _logger.LogInformation("------------------- GetAuthenticationStateAsync -------------------");
+            _logger.LogInformation("Claims obtenus : {Count}", claims.Count);
 
-            var identity = new ClaimsIdentity();
+            var identity = claims.Count > 0
+                ? new ClaimsIdentity(claims, "jwt", "email", "role")
+                : new ClaimsIdentity();
 
+            var principal = new ClaimsPrincipal(identity);
+            var state = new AuthenticationState(principal);
 
-            var session = _client.Auth.CurrentSession;
-
-            if (session is not null && !string.IsNullOrEmpty(session.AccessToken))
-            {
-                identity = new ClaimsIdentity(ParseClaimsFromJwt(session.AccessToken), "jwt");
-            }
-
-            var user = new ClaimsPrincipal(identity);
-            var state = new AuthenticationState(user);
-
+            // Notifiez les composants du changement d'état d'authentification
             NotifyAuthenticationStateChanged(Task.FromResult(state));
 
-            return Task.FromResult(state);
+            return state;
         }
-
-        public static IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
+        catch (Exception ex)
         {
-            var payload = jwt.Split('.')[1];
-            var jsonBytes = ParseBase64WithoutPadding(payload);
-            var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
-            return keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString()));
+            _logger.LogError(ex, "Erreur dans AuthStateProvider");
+            return new AuthenticationState(new ClaimsPrincipal());
         }
+    }
 
-        private static byte[] ParseBase64WithoutPadding(string base64)
-        {
-            switch (base64.Length % 4)
-            {
-                case 2: base64 += "=="; break;
-                case 3: base64 += "="; break;
-            }
-            return Convert.FromBase64String(base64);
-        }
+
+    public async Task ForceRefreshAsync()
+    {
+        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 }

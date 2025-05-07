@@ -1,5 +1,5 @@
 using DexChen.UI.Providers;
-using DexChen.UI.Services;
+using DexChen.UI.Services.Contract;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -7,7 +7,7 @@ namespace DexChen.UI.Pages
 {
     public partial class Login
     {
-        [Inject] AuthService AuthService { get; set; } = default!;
+        [Inject] IAuthService AuthService { get; set; } = default!;
         [Inject] private NavigationManager Navigation { get; set; } = default!;
         [Inject] private AuthenticationStateProvider AuthProvider { get; set; } = default!;
 
