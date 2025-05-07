@@ -1,0 +1,81 @@
+﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+
+<link href="css/main-layout.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+
+<div class="app-container">
+    <header class="app-header">
+        <div class="logo-container">
+            <a href="/" class="logo-link">
+                <img src="/dexchenlogo.png" alt="DexChen Logo" class="logo" />
+            </a>
+        </div>
+        <nav class="main-nav">
+            <AuthorizeView>
+                <Authorized>
+                    <div class="nav-links">
+                        <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
+                            <i class="fas fa-home"></i>
+                            <span>Accueil</span>
+                        </NavLink>
+                        <NavLink class="nav-link" href="scan" Match="NavLinkMatch.All">
+                            <i class="fas fa-qrcode"></i>
+                            <span>Scan</span>
+                        </NavLink>
+                        <NavLink class="nav-link" href="collection" Match="NavLinkMatch.All">
+                            <i class="fas fa-book"></i>
+                            <span>Collection</span>
+                        </NavLink>
+                        <NavLink class="nav-link" href="favoris" Match="NavLinkMatch.All">
+                            <i class="fas fa-star"></i>
+                            <span>Favoris</span>
+                        </NavLink>
+                    </div>
+                    <div class="user-section">
+                        <span class="user-email">@context.User.Identity?.Name</span>
+                        <button class="logout-btn" @onclick="Logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="nav-links">
+                        <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
+                            <i class="fas fa-home"></i>
+                            <span>Accueil</span>
+                        </NavLink>
+                    </div>
+                    <div class="auth-buttons">
+                        <NavLink class="nav-link" href="login">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Se connecter</span>
+                        </NavLink>
+                        <NavLink class="nav-link" href="register">
+                            <i class="fas fa-user-plus"></i>
+                            <span>S'inscrire</span>
+                        </NavLink>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        @Body
+    </main>
+
+    <footer class="app-footer">
+        <div class="footer-content">
+            <span>DexChen v1.0</span>
+            <span>&copy; @DateTime.Now.Year DexChen. Tous droits réservés.</span>
+        </div>
+    </footer>
+</div>
+
+@code {
+    private async Task Logout()
+    {
+        // TODO: Implement logout logic
+    }
+}

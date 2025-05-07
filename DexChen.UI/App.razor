@@ -1,0 +1,73 @@
+﻿﻿@using System.Security.Claims
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <LayoutView Layout="@typeof(MainLayout)">
+                        <div class="error-container">
+                            <div class="error-card">
+                                <div class="error-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <h1 class="error-title">Accès restreint</h1>
+                                <p class="error-message">
+                                    Vous n'avez pas les droits nécessaires pour accéder à cette page.
+                                </p>
+                                <div class="error-actions">
+                                    <a href="/" class="error-button primary">
+                                        <i class="fas fa-home"></i>
+                                        Retour à l'accueil
+                                    </a>
+                                    <a href="/login" class="error-button secondary">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                        Se connecter
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </LayoutView>
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Page non trouvée - DexChen</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <div class="error-container">
+                    <div class="error-card">
+                        <div class="error-icon">
+                            <i class="fas fa-map-signs"></i>
+                        </div>
+                        <h1 class="error-title">Page non trouvée</h1>
+                        <p class="error-message">
+                            Oups ! La page que vous recherchez n'existe pas ou a été déplacée.
+                        </p>
+                        <div class="error-actions">
+                            <a href="/" class="error-button primary">
+                                <i class="fas fa-home"></i>
+                                Retour à l'accueil
+                            </a>
+                            <button class="error-button secondary" @onclick="NavigateBack">
+                                <i class="fas fa-arrow-left"></i>
+                                Page précédente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+
+    private void NavigateBack()
+    {
+        // JavaScript interop pour retourner à la page précédente
+        NavigationManager.NavigateTo("javascript:history.back()");
+    }
+}

@@ -1,0 +1,195 @@
+.error-container {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(67, 97, 238, 0.1), transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(247, 37, 133, 0.08), transparent 40%);
+}
+
+.error-card {
+    background-color: rgba(26, 26, 46, 0.5);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: var(--shadow-lg);
+    animation: fadeIn 0.5s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.error-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+        linear-gradient(120deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.05) 45%, rgba(255, 255, 255, 0) 50%);
+    z-index: -1;
+    animation: shine 8s infinite;
+}
+
+.error-icon {
+    width: 90px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto var(--spacing-lg);
+    font-size: 2.5rem;
+    color: var(--textPrimary);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 50%;
+    position: relative;
+    z-index: 1;
+    animation: pulse 2s infinite;
+}
+
+.error-icon::before {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: var(--surfaceLight);
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.error-icon i {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 2.5rem;
+    filter: drop-shadow(0 2px 5px rgba(67, 97, 238, 0.3));
+}
+
+.error-title {
+    font-family: var(--font-primary);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.02em;
+}
+
+.error-message {
+    font-family: var(--font-secondary);
+    color: var(--textSecondary);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: var(--spacing-xl);
+}
+
+.error-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    margin-top: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.error-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+    font-family: var(--font-primary);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+}
+
+.error-button.primary {
+    background: linear-gradient(135deg, var(--primary), var(--primaryDark));
+    color: var(--textPrimary);
+    border: none;
+    box-shadow: var(--shadow-md);
+}
+
+.error-button.primary:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg), 0 0 15px rgba(67, 97, 238, 0.3);
+}
+
+.error-button.secondary {
+    background: rgba(26, 26, 46, 0.5);
+    color: var(--textPrimary);
+    border: 1px solid var(--primary);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.error-button.secondary:hover {
+    background-color: var(--surfaceHover);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--accent);
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(67, 97, 238, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
+    }
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-100%);
+    }
+    20%, 100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .error-title {
+        font-size: 2rem;
+    }
+    
+    .error-message {
+        font-size: 1rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+    }
+    
+    .error-button {
+        width: 100%;
+    }
+    
+    .error-icon {
+        width: 80px;
+        height: 80px;
+    }
+} 

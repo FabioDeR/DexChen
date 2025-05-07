@@ -1,0 +1,136 @@
+
+🧠 Contexte et rôle de l'agent IA
+Tu es intégré dans un projet nommé DexChen, une application mobile développée en .NET MAUI Blazor.
+L’application a pour but de permettre à un utilisateur de scanner une carte Pokémon, de retrouver ses informations, et d’estimer sa valeur de revente grâce aux services externes Roboflow et Cardmarket.
+Les données sont centralisées dans Supabase, qui gère aussi l’authentification, le stockage et la base PostgreSQL.
+🎨 Ton rôle principal
+Ton rôle est exclusivement centré sur le design et le style des composants de l’application MAUI Blazor :
+Styliser les composants .razor
+Structurer les pages sans toucher à la logique métier (services, modèles, appels API)
+Appliquer une charte graphique précise
+Proposer des interfaces responsives, modernes et accessibles
+Assurer l'homogénéité des couleurs, contrastes, paddings et typographies
+La logique "code-behind" des composants est déjà gérée côté développeur principal.
+Tu n’as pas à gérer la communication avec Supabase ou la logique d’état : concentre-toi uniquement sur la partie présentation.
+🎨 Palette de couleurs officielle de DexChen
+| Rôle / Usage | Nom technique | HEX | Description |
+|----------------------|-----------------|----------|--------------------------------------------------|
+| Couleur primaire | primary | #0078D4 | Bleu technologique pour boutons, éléments actifs |
+| Couleur secondaire | secondary | #F9C400 | Jaune doré pour accents, highlights |
+| Variante foncée | primaryDark | #005A9E | Hover/pressed pour boutons primaires |
+| Variante claire | primaryLight | #4FA3F7 | Arrière-plans secondaires |
+| Fond principal | background | #1A1A1A | Fond global sombre, stylisé |
+| Fond alternatif | surface | #2C2C2C | Cartes, éléments secondaires |
+| Texte principal | textPrimary | #FFFFFF | Titres, contenus principaux |
+| Texte secondaire | textSecondary | #CCCCCC | Libellés, informations de contexte |
+| Accent graphique | graphHighlight | #F58220 | Valeurs, graphiques, notifications |
+| Succès | success | #4CAF50 | Statuts valides |
+| Erreur / alerte | error | #F44336 | Messages d’erreur, invalidation |
+| Information | info | #03A9F4 | Notifications neutres |
+Tu peux utiliser ces noms comme classes CSS personnalisées ou directement les intégrer dans les styles inline.
+L’objectif est d’avoir un design harmonieux, épuré, moderne et accessible, adapté à une app mobile sombre.
+
+🧭 Description fonctionnelle pour MainLayout.razor
+Ton composant MainLayout.razor sert de cadre principal de navigation et de structure visuelle. Il doit respecter :
+
+🎯 Objectif principal
+Fournir une interface fluide, sombre et moderne, avec une navigation claire entre les pages de l’application (scan, collection, favoris, profil…), et des éléments visuels cohérents avec la charte graphique DexChen.
+
+✅ Ce que le layout doit contenir
+1. 🧱 Structure générale
+Un header fixe avec le logo de DexChen (ou le nom)
+
+Une nav ou un sidebar horizontal ou vertical avec des icônes
+
+Un main dynamique qui rend le contenu de chaque page
+
+Un footer facultatif (version, copyright…)
+
+
+3. 📱 Responsivité
+Navigation adaptée aux mobiles (hamburger menu si nécessaire)
+
+Utilisation de Flexbox ou CSS Grid
+
+Design PWA friendly (espacement, tailles de texte, padding)
+
+4. 🔐 Affichage dynamique selon l’authentification
+Si l’utilisateur est connecté :
+
+Affiche son email / icône utilisateur
+
+Montre les liens : Scan, Collection, Favoris, Déconnexion
+
+Si non connecté :
+
+Affiche Se connecter / S’inscrire
+
+Utilise le composant <AuthorizeView> Blazor pour afficher les bons éléments dynamiquement.
+
+🧩 Bonus recommandé
+Intégrer un <ThemeToggle /> (sombre/clair) même si on reste dark pour l’instant
+
+Badge de notification sur les alertes ou favoris
+
+Support PWA: padding autour de l’écran, pas de scroll horizontal
+
+🎨 Objectif de la page Home.razor
+Créer une interface d’accueil immersive et attrayante pour DexChen, qui :
+
+Met en avant la fonctionnalité principale : scanner des cartes Pokémon pour estimer leur valeur.
+
+Propose une interface moderne, responsive, en mode sombre.
+
+Oriente facilement l’utilisateur vers la connexion ou l’exploration.
+
+✅ Contenu fonctionnel à inclure
+1. Bannière principale (Hero section)
+Grand titre : « Scanne. Estime. Collectionne. »
+
+Sous-titre : « DexChen t’aide à identifier tes cartes Pokémon et à connaître leur valeur réelle sur le marché. »
+
+Un gros bouton principal : Scanner une carte
+
+Si l’utilisateur n’est pas connecté : un bouton Se connecter ou Créer un compte
+
+Image décorative ou illustration stylisée (ex : carte avec loupe)
+
+2. Sections secondaires
+🔍 Fonctionnement (3 étapes)
+Icônes + texte :
+
+📸 Scanner : prends ta carte en photo
+
+💡 Identification : DexChen détecte la carte automatiquement
+
+💰 Estimation : récupère la valeur moyenne et l’ajoute à ta collection
+
+⭐ Avantages
+Affichage de 2-3 cartes populaires
+
+Animation légère ou effet hover
+
+Texte court : « Suis la valeur de tes cartes préférées », « Ajoute des alertes de prix »
+
+🎨 Style visuel
+Mode sombre (fond #1A1A1A, texte #FFFFFF)
+
+Boutons en #0078D4 (bleu primaire) et #F9C400 (jaune secondaire)
+
+Utiliser les couleurs d’accent (#F58220 pour prix, #03A9F4 pour info)
+
+Polices modernes, taille généreuse, marges aérées
+
+📱 Responsive
+La page doit s’afficher parfaitement en mobile
+
+Hero centré, call-to-action visibles sans scroller
+
+Stack vertical sous 768px
+
+🔐 Dynamique (optionnel)
+Si l’utilisateur est connecté, afficher un message du style :
+« Re-bonjour, [nom] 👋 Prêt à scanner une nouvelle carte ? »
+
+Si déconnecté : montrer le bouton Se connecter en haut à droite
+

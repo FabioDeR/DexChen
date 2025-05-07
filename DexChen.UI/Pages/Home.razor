@@ -1,0 +1,112 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
+
+
+
+<PageTitle>DexChen - Scanne. Estime. Collectionne.</PageTitle>
+
+<div class="hero-section">
+    <div class="hero-content">
+        <AuthorizeView>
+            <Authorized>
+                <h1 class="hero-title">Re-bonjour, @context.User.Identity?.Name <span class="wave">👋</span></h1>
+                <p class="hero-subtitle">Prêt à scanner une nouvelle carte? Découvre la valeur de ta collection en quelques clics.</p>
+            </Authorized>
+            <NotAuthorized>
+                <h1 class="hero-title">Scanne. Estime. Collectionne.</h1>
+                <p class="hero-subtitle">DexChen t'aide à identifier tes cartes Pokémon et à connaître leur valeur réelle sur le marché.</p>
+            </NotAuthorized>
+        </AuthorizeView>
+
+        <div class="hero-buttons">
+            <button class="btn-scan" @onclick="NavigateToScan">
+                <i class="fas fa-qrcode"></i>
+                Scanner une carte
+            </button>
+            <AuthorizeView>
+                <NotAuthorized>
+                    <button class="btn-secondary" @onclick="NavigateToLogin">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Se connecter
+                    </button>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="section-header">
+        <h2>Comment ça marche</h2>
+        <p>Notre processus en trois étapes simples</p>
+    </div>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-camera"></i>
+            </div>
+            <h3 class="feature-title">Scanner</h3>
+            <p class="feature-description">Prends ta carte en photo et laisse DexChen faire le reste. Notre technologie reconnaît instantanément ta carte.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-magic"></i>
+            </div>
+            <h3 class="feature-title">Identification</h3>
+            <p class="feature-description">DexChen détecte automatiquement ta carte, sa rareté et son édition grâce à notre IA avancée.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="feature-title">Estimation</h3>
+            <p class="feature-description">Récupère la valeur moyenne du marché et ajoute-la à ta collection. Suis l'évolution des prix.</p>
+        </div>
+    </div>
+</div>
+
+<div class="popular-cards">
+    <div class="section-header">
+        <h2>Cartes populaires</h2>
+        <p>Découvre les cartes les plus recherchées du moment</p>
+    </div>
+    <div class="cards-grid">
+        <div class="card-preview">
+            <span class="card-badge">Rare</span>
+            <img src="images/card1.jpg" alt="Charizard" loading="lazy" />
+            <div class="card-price">
+                <span class="price-value">€1,200</span>
+                <span class="price-trend"><i class="fas fa-arrow-up"></i> 5%</span>
+            </div>
+        </div>
+        <div class="card-preview">
+            <span class="card-badge">Ultra-rare</span>
+            <img src="images/card2.jpg" alt="Pikachu" loading="lazy" />
+            <div class="card-price">
+                <span class="price-value">€800</span>
+                <span class="price-trend"><i class="fas fa-arrow-up"></i> 12%</span>
+            </div>
+        </div>
+        <div class="card-preview">
+            <span class="card-badge">Holo</span>
+            <img src="images/card3.jpg" alt="Mewtwo" loading="lazy" />
+            <div class="card-price">
+                <span class="price-value">€950</span>
+                <span class="price-trend"><i class="fas fa-arrow-down"></i> 2%</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void NavigateToScan()
+    {
+        NavigationManager.NavigateTo("/scan");
+    }
+
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+}

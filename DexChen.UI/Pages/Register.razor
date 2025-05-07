@@ -1,0 +1,54 @@
+@page "/register"
+@inject NavigationManager NavigationManager
+
+<div class="auth-container">
+    <div class="auth-card">
+        <img src="dexchenlogo.png" alt="DexChen Logo" class="auth-logo" />
+        <h1 class="auth-title">Créer un compte</h1>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <div class="input-with-icon">
+                <i class="fas fa-envelope"></i>
+                <input type="email" id="email" class="form-control" @bind="email" placeholder="votre@email.com" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <div class="input-with-icon">
+                <i class="fas fa-lock"></i>
+                <input type="@(showPassword ? "text" : "password")" id="password" class="form-control" @bind="password" placeholder="••••••••" />
+                <button type="button" class="toggle-password" @onclick="TogglePasswordVisibility">
+                    <i class="fas @(showPassword ? "fa-eye-slash" : "fa-eye")"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirmer le mot de passe</label>
+            <div class="input-with-icon">
+                <i class="fas fa-lock"></i>
+                <input type="@(showPassword ? "text" : "password")" id="confirmPassword" class="form-control" @bind="confirmPassword" placeholder="••••••••" />
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="error-message">
+                @errorMessage
+            </div>
+        }
+
+        <button class="btn-primary" @onclick="HandleRegister">
+            <span>S'inscrire</span>
+            <i class="fas fa-user-plus"></i>
+        </button>
+
+        <div class="auth-links">
+            <a href="/login" class="link-secondary">Déjà un compte ? Se connecter</a>
+        </div>
+    </div>
+</div>
+
+
