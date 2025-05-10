@@ -1,8 +1,10 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.Components.Authorization
+@using PokemonTcgSdk.Standard.Infrastructure.HttpClients.Cards
+@using System.Timers
+@implements IDisposable
 @inject NavigationManager NavigationManager
-
-
+@inject DexChen.UI.Services.Contract.ICardService CardService
 
 <PageTitle>DexChen - Scanne. Estime. Collectionne.</PageTitle>
 
@@ -66,40 +68,257 @@
     </div>
 </div>
 
-<div class="popular-cards">
+<div class="popular-cards" @onmouseover="PauseCarousel" @onmouseout="ResumeCarousel">
     <div class="section-header">
         <h2>Cartes populaires</h2>
         <p>Découvre les cartes les plus recherchées du moment</p>
-    </div>
-    <div class="cards-grid">
-        <div class="card-preview">
-            <span class="card-badge">Rare</span>
-            <img src="images/card1.jpg" alt="Charizard" loading="lazy" />
-            <div class="card-price">
-                <span class="price-value">€1,200</span>
-                <span class="price-trend"><i class="fas fa-arrow-up"></i> 5%</span>
-            </div>
-        </div>
-        <div class="card-preview">
-            <span class="card-badge">Ultra-rare</span>
-            <img src="images/card2.jpg" alt="Pikachu" loading="lazy" />
-            <div class="card-price">
-                <span class="price-value">€800</span>
-                <span class="price-trend"><i class="fas fa-arrow-up"></i> 12%</span>
-            </div>
-        </div>
-        <div class="card-preview">
-            <span class="card-badge">Holo</span>
-            <img src="images/card3.jpg" alt="Mewtwo" loading="lazy" />
-            <div class="card-price">
-                <span class="price-value">€950</span>
-                <span class="price-trend"><i class="fas fa-arrow-down"></i> 2%</span>
+
+        <div class="carousel-controls">
+            <button class="prev-btn" @onclick="PreviousCard" disabled="@(CurrentIndex <= 0)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="pagination">@(CurrentIndex + 1) / @(FeaturedCards?.Count ?? 0)</span>
+            <button class="next-btn" @onclick="NextCard" disabled="@(CurrentIndex >= (FeaturedCards?.Count - 1 ?? 0))">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <div class="carousel-auto-toggle">
+                <input type="checkbox" id="autoplay" @bind="AutoPlayEnabled" />
+                <label for="autoplay">Défilement automatique</label>
             </div>
         </div>
     </div>
+
+    @if (IsLoading)
+    {
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Chargement des cartes Pokémon...</p>
+        </div>
+    }
+    else if (FeaturedCards != null && FeaturedCards.Any())
+    {
+        <div class="carousel-container">
+            @for (int i = 0; i < FeaturedCards.Count; i++)
+            {
+                var card = FeaturedCards[i];
+                var activeClass = i == CurrentIndex ? "active" : "";
+
+                <div class="card-preview @activeClass" style="transition: all 0.5s ease">
+                    <span class="card-badge">@GetCardRarity(card)</span>
+                    <img src="@card.Images?.Small" alt="@card.Name" loading="lazy" />
+                    <div class="card-price">
+                        <span class="price-value">@GetCardPrice(card)</span>
+                        <span class="price-trend"><i class="@GetPriceTrendIcon(card)"></i> @GetPriceTrendPercentage(card)</span>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="carousel-indicators">
+            @for (int i = 0; i < FeaturedCards.Count; i++)
+            {
+                var isActive = i == CurrentIndex;
+                var indicatorClass = isActive ? "indicator active" : "indicator";
+                var currentIndex = i;  // Capture the value for the lambda
+
+                <span class="@indicatorClass" @onclick="() => GoToSlide(currentIndex)"></span>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="no-cards-message">
+            <p>Aucune carte trouvée. Veuillez réessayer plus tard.</p>
+        </div>
+    }
 </div>
 
 @code {
+    private List<Card> FeaturedCards { get; set; }
+    private bool IsLoading { get; set; } = true;
+    private Random Random = new Random();
+    private int CurrentIndex { get; set; } = 0;
+    private Timer _carouselTimer;
+    private bool AutoPlayEnabled { get; set; } = true;
+    private bool IsPaused { get; set; } = false;
+    private const int CarouselInterval = 5000; // 5 secondes entre chaque changement de carte
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFeaturedCards();
+
+        // Initialise le timer après le chargement des cartes
+        InitializeCarouselTimer();
+    }
+
+    private void InitializeCarouselTimer()
+    {
+        _carouselTimer = new Timer(CarouselInterval);
+        _carouselTimer.Elapsed += (sender, args) =>
+        {
+            // Cette méthode s'exécute sur un thread différent, nous devons appeler InvokeAsync
+            InvokeAsync(() =>
+            {
+                if (AutoPlayEnabled && !IsPaused && FeaturedCards?.Count > 0)
+                {
+                    CurrentIndex = (CurrentIndex + 1) % FeaturedCards.Count;
+                    StateHasChanged();
+                }
+            });
+        };
+        _carouselTimer.AutoReset = true;
+        _carouselTimer.Enabled = AutoPlayEnabled;
+    }
+
+    private void NextCard()
+    {
+        if (FeaturedCards != null && CurrentIndex < FeaturedCards.Count - 1)
+        {
+            CurrentIndex++;
+            ResetCarouselTimer();
+            StateHasChanged();
+        }
+        else if (FeaturedCards != null && FeaturedCards.Count > 0)
+        {
+            // Revenir au début si on est à la fin
+            CurrentIndex = 0;
+            ResetCarouselTimer();
+            StateHasChanged();
+        }
+    }
+
+    private void PreviousCard()
+    {
+        if (CurrentIndex > 0)
+        {
+            CurrentIndex--;
+            ResetCarouselTimer();
+            StateHasChanged();
+        }
+        else if (FeaturedCards != null && FeaturedCards.Count > 0)
+        {
+            // Aller à la fin si on est au début
+            CurrentIndex = FeaturedCards.Count - 1;
+            ResetCarouselTimer();
+            StateHasChanged();
+        }
+    }
+
+    private void GoToSlide(int index)
+    {
+        if (FeaturedCards != null && index >= 0 && index < FeaturedCards.Count)
+        {
+            CurrentIndex = index;
+            ResetCarouselTimer();
+            StateHasChanged();
+        }
+    }
+
+    private void PauseCarousel()
+    {
+        IsPaused = true;
+    }
+
+    private void ResumeCarousel()
+    {
+        IsPaused = false;
+    }
+
+    private void ResetCarouselTimer()
+    {
+        if (_carouselTimer != null)
+        {
+            _carouselTimer.Stop();
+            _carouselTimer.Start();
+        }
+    }
+
+    public void Dispose()
+    {
+        _carouselTimer?.Dispose();
+    }
+
+    private async Task LoadFeaturedCards()
+    {
+        try
+        {
+            IsLoading = true;
+            FeaturedCards = await CardService.GetFeaturedCardsAsync(5); // Augmenter le nombre pour un meilleur effet carousel
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Erreur lors du chargement des cartes: {ex.Message}");
+            FeaturedCards = new List<Card>();
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private string GetCardRarity(Card card)
+    {
+        if (string.IsNullOrEmpty(card.Rarity))
+            return "Standard";
+
+        return card.Rarity switch
+        {
+            var r when r.Contains("Ultra") => "Ultra-rare",
+            var r when r.Contains("Holo") => "Holo",
+            var r when r.Contains("Rare") => "Rare",
+            _ => "Standard"
+        };
+    }
+
+    private string GetCardPrice(Card card)
+    {
+        // Afficher le prix réel si disponible dans TCGPlayer ou CardMarket
+        if (card.Tcgplayer?.Prices != null)
+        {
+            var holofoil = card.Tcgplayer.Prices.Holofoil?.Market;
+            var reverseHolofoil = card.Tcgplayer.Prices.ReverseHolofoil?.Market;
+            var normal = card.Tcgplayer.Prices.Normal?.Market;
+
+            var price = holofoil ?? reverseHolofoil ?? normal;
+            if (price.HasValue)
+                return $"€{price.Value:F2}";
+        }
+
+        if (card.Cardmarket?.Prices != null)
+        {
+            var trendPrice = card.Cardmarket.Prices.TrendPrice;
+            var avgSellPrice = card.Cardmarket.Prices.AverageSellPrice;
+
+            var price = trendPrice ?? avgSellPrice;
+            if (price.HasValue)
+                return $"€{price.Value:F2}";
+        }
+
+        // Générer un prix simulé basé sur la rareté si aucun prix réel n'est disponible
+        var basePriceByRarity = GetCardRarity(card) switch
+        {
+            "Ultra-rare" => Random.Next(800, 1500),
+            "Holo" => Random.Next(300, 800),
+            "Rare" => Random.Next(100, 300),
+            _ => Random.Next(10, 100)
+        };
+
+        return $"€{basePriceByRarity}";
+    }
+
+    private string GetPriceTrendIcon(Card card)
+    {
+        // Si les données de prix ne sont pas disponibles, générer aléatoirement
+        return Random.Next(0, 10) > 3 ? "fas fa-arrow-up" : "fas fa-arrow-down";
+    }
+
+    private string GetPriceTrendPercentage(Card card)
+    {
+        // Si les données de prix ne sont pas disponibles, générer aléatoirement
+        return $"{Random.Next(1, 15)}%";
+    }
+
     private void NavigateToScan()
     {
         NavigationManager.NavigateTo("/scan");

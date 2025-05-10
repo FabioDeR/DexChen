@@ -1,0 +1,405 @@
+@page "/scan"
+@using DexChen.Domain.Dtos
+@using DexChen.UI.Services.Contract
+@using PokemonTcgSdk.Standard.Infrastructure.HttpClients.Cards
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+@inject IScanService ScanService
+@inject ICardService CardService
+<PageTitle>Scanner une carte - DexChen</PageTitle>
+
+<div class="scan-container">
+	@if (scanState == ScanState.Initial)
+	{
+		<div class="scan-initial">
+			<div class="scan-header">
+				<h1 class="scan-title">Scanner une carte</h1>
+				<p class="scan-subtitle">Prends une photo de ta carte Pokémon ou télécharge une image</p>
+			</div>
+
+			<div class="scan-options">
+				<button class="scan-option-btn camera-btn" @onclick="StartCamera">
+					<div class="option-icon-container">
+						<i class="fas fa-camera"></i>
+					</div>
+					<span>Utiliser la caméra</span>
+				</button>
+
+				<div class="option-separator">
+					<span>OU</span>
+				</div>
+
+				<label class="scan-option-btn upload-btn">
+					<div class="option-icon-container">
+						<i class="fas fa-upload"></i>
+					</div>
+					<span>Télécharger une image</span>
+					<InputFile OnChange="HandleFileUpload" accept="image/*" class="hidden-input" />
+				</label>
+			</div>
+		</div>
+	}
+	else if (scanState == ScanState.Camera)
+	{
+		<div class="camera-container">
+			<div class="camera-header">
+				<h2>Aligne ta carte dans le cadre</h2>
+				<p>Assure-toi que l'éclairage est bon et que la carte est bien visible</p>
+			</div>
+
+			<div class="video-container">
+				<video id="video" autoplay playsinline class="camera-feed"></video>
+				<div class="camera-overlay">
+					<div class="card-frame"></div>
+				</div>
+			</div>
+
+			<div class="camera-controls">
+				<button class="control-btn cancel-btn" @onclick="CancelCamera">
+					<i class="fas fa-times"></i>
+					<span>Annuler</span>
+				</button>
+				<button class="control-btn capture-btn" @onclick="CaptureImage">
+					<i class="fas fa-circle"></i>
+				</button>
+				<button class="control-btn switch-btn" @onclick="SwitchCamera">
+					<i class="fas fa-sync-alt"></i>
+					<span>Changer</span>
+				</button>
+			</div>
+		</div>
+	}
+	else if (scanState == ScanState.Preview)
+	{
+		<div class="preview-container">
+			<div class="preview-header">
+				<h2>Vérifier l'image</h2>
+				<p>Est-ce que la carte est bien visible ?</p>
+			</div>
+
+			<div class="image-preview">
+				<img src="@previewImageUrl" alt="Aperçu de la carte" />
+			</div>
+
+			<div class="preview-controls">
+				<button class="control-btn cancel-btn" @onclick="ResetScan">
+					<i class="fas fa-arrow-left"></i>
+					<span>Reprendre</span>
+				</button>
+				<button class="control-btn confirm-btn" @onclick="AnalyzeImage">
+					<i class="fas fa-check"></i>
+					<span>Confirmer</span>
+				</button>
+			</div>
+		</div>
+	}
+	else if (scanState == ScanState.Loading)
+	{
+		<div class="loading-container">
+			<div class="spinner"></div>
+			<h2>Analyse en cours...</h2>
+			<p>Nous identifions ta carte Pokémon</p>
+		</div>
+	}
+	else if (scanState == ScanState.Result)
+	{
+		<div class="result-container">
+			<div class="result-header">
+				<h2>Carte identifiée !</h2>
+			</div>
+
+			<div class="result-content">
+				<div class="card-image-container">
+					<img src="@cardImageUrl" alt="@cardName" class="card-image" />
+				</div>
+
+				<div class="card-details">
+					<h3 class="card-name">@cardName</h3>
+
+					@if (!string.IsNullOrEmpty(cardNumber))
+					{
+						<div class="card-info">
+							<span class="info-label">Numéro</span>
+							<span class="info-value">@cardNumber</span>
+						</div>
+					}
+
+					@if (!string.IsNullOrEmpty(cardSeries))
+					{
+						<div class="card-info">
+							<span class="info-label">Série</span>
+							<span class="info-value">@cardSeries</span>
+						</div>
+					}
+
+					@if (!string.IsNullOrEmpty(cardRarity))
+					{
+						<div class="card-info">
+							<span class="info-label">Rareté</span>
+							<span class="info-value"><span class="rarity-badge @GetRarityClass()">@cardRarity</span></span>
+						</div>
+					}
+
+					<div class="card-info">
+						<span class="info-label">Valeur estimée</span>
+						<span class="info-value card-price">@cardPrice</span>
+					</div>
+
+					<div class="card-buttons">
+						<button class="control-btn scan-again" @onclick="ResetScan">
+							<i class="fas fa-camera"></i>
+							<span>Scanner une autre carte</span>
+						</button>
+						<button class="control-btn add-collection" disabled>
+							<i class="fas fa-plus"></i>
+							<span>Ajouter à ma collection</span>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+</div>
+
+@code {
+	private enum ScanState
+	{
+		Initial,
+		Camera,
+		Preview,
+		Loading,
+		Result
+	}
+
+	private ScanState scanState = ScanState.Initial;
+	private string previewImageUrl = string.Empty;
+	private string cardImageUrl = string.Empty;
+	private string cardName = string.Empty;
+	private string cardNumber = string.Empty;
+	private string cardSeries = string.Empty;
+	private string cardRarity = string.Empty;
+	private string cardPrice = string.Empty;
+	private string scanErrorMessage = string.Empty;
+	private List<PokemonCard> possibleMatches = new();
+	private PokemonCard? selectedCard;
+	private IJSObjectReference _module;
+	private bool _isCameraInitialized = false;
+	private byte[]? uploadedImageBytes;
+	private string uploadedFileName = string.Empty;
+
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			_module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/camera.js");
+		}
+
+		if (scanState == ScanState.Camera && !_isCameraInitialized)
+		{
+			await InitializeCamera();
+			_isCameraInitialized = true;
+		}
+	}
+
+	private InputFileChangeEventArgs? fileChangeEventArgs;
+
+	private async Task HandleFileUpload(InputFileChangeEventArgs e)
+	{
+		try
+		{
+			var file = e.File;
+			if (file != null)
+			{
+				fileChangeEventArgs = e;
+				uploadedFileName = file.Name;
+
+				// Définir une limite de taille maximale (par exemple, 5 Mo)
+				const long maxAllowedSize = 5 * 1024 * 1024; // 5 Mo
+
+				if (file.Size > maxAllowedSize)
+				{
+					Console.WriteLine($"Erreur : Le fichier dépasse la taille maximale autorisée de {maxAllowedSize / (1024 * 1024)} Mo.");
+					scanErrorMessage = "Le fichier est trop volumineux. Veuillez télécharger une image plus petite.";
+					return;
+				}
+
+				// Lire le fichier avec la limite spécifiée
+				uploadedImageBytes = new byte[file.Size];
+				await file.OpenReadStream(maxAllowedSize).ReadAsync(uploadedImageBytes);
+
+				// Convertir en base64 et mettre à jour l'aperçu
+				previewImageUrl = $"data:image/jpeg;base64,{Convert.ToBase64String(uploadedImageBytes)}";
+				scanState = ScanState.Preview;
+			}
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine($"Erreur lors du téléchargement de l'image : {ex.Message}");
+			scanErrorMessage = "Une erreur est survenue lors du téléchargement de l'image.";
+		}
+	}
+
+
+	private async Task AnalyzeImage()
+	{
+		scanState = ScanState.Loading;
+		scanErrorMessage = string.Empty;
+
+		try
+		{
+			if (uploadedImageBytes is null)
+			{
+				scanErrorMessage = "Fichier introuvable.";
+				scanState = ScanState.Initial;
+				return;
+			}
+
+			var base64 = Convert.ToBase64String(uploadedImageBytes);
+			var scan = await ScanService.AnalyzeImageFromBase64Async(base64);
+
+			if (scan is null)
+			{
+				scanErrorMessage = "Aucune carte n'a été reconnue.";
+				scanState = ScanState.Initial;
+				return;
+			}
+
+			var candidates = await CardService.SearchCardsByScanResultAsync(scan);
+
+			if (!candidates.Any())
+				candidates = await CardService.SearchWithFallbackTermsAsync(scan);
+
+			var bestMatch = CardService.PickBestMatch(scan, candidates);
+
+			if (bestMatch is not null)
+			{
+				scan.EnglishRarity = ReplaceIfMissing(scan.EnglishRarity, bestMatch.Rarity);
+				scan.EnglishIllustrator = ReplaceIfMissing(scan.EnglishIllustrator, bestMatch.Artist);
+
+				if (string.IsNullOrWhiteSpace(scan.ImageUrl))
+					scan.ImageUrl = bestMatch.Images?.Large?.ToString()
+									?? bestMatch.Images?.Small?.ToString()
+									?? string.Empty;
+
+				// if (bestMatch.Tcgplayer?.Prices?.TryGetValue("holofoil", out var price) == true && price.Market.HasValue)
+				// 	scan.PriceEstimate = $"${price.Market.Value:F2}";
+			}
+
+			scanState = ScanState.Result;
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine("Erreur AnalyseImage : " + ex.Message);
+			scanErrorMessage = "Une erreur est survenue.";
+			scanState = ScanState.Initial;
+		}
+	}
+
+	private string ReplaceIfMissing(string currentValue, string? fallback)
+	{
+		return string.IsNullOrWhiteSpace(currentValue) || currentValue.Equals("Unknown", StringComparison.OrdinalIgnoreCase)
+			? fallback ?? "–"
+			: currentValue;
+	}
+
+	
+
+	private async Task InitializeCamera()
+	{
+		try
+		{
+			await _module.InvokeVoidAsync("initCamera", "video");
+		}
+		catch (Exception ex)
+		{
+			Console.Error.WriteLine($"Erreur lors de l'initialisation de la caméra: {ex.Message}");
+			// Revenir à l'état initial en cas d'erreur
+			scanState = ScanState.Initial;
+			StateHasChanged();
+		}
+	}
+
+	private void StartCamera()
+	{
+		scanState = ScanState.Camera;
+		_isCameraInitialized = false;
+	}
+
+	private async Task CancelCamera()
+	{
+		if (_isCameraInitialized)
+		{
+			await _module.InvokeVoidAsync("stopCamera");
+			_isCameraInitialized = false;
+		}
+		scanState = ScanState.Initial;
+	}
+
+	private async Task SwitchCamera()
+	{
+		if (_isCameraInitialized)
+		{
+			await _module.InvokeVoidAsync("switchCamera");
+		}
+	}
+
+	private async Task CaptureImage()
+	{
+		if (_isCameraInitialized)
+		{
+			previewImageUrl = await _module.InvokeAsync<string>("captureImage");
+			await _module.InvokeVoidAsync("stopCamera");
+			_isCameraInitialized = false;
+			scanState = ScanState.Preview;
+		}
+	}
+
+	private void ResetScan()
+	{
+		scanState = ScanState.Initial;
+		previewImageUrl = string.Empty;
+		scanErrorMessage = string.Empty;
+	}
+
+
+
+	private string GetRarityClass()
+	{
+		return cardRarity.ToLowerInvariant() switch
+		{
+			var r when r.Contains("ultra") => "ultra-rare",
+			var r when r.Contains("holo") => "holo",
+			var r when r.Contains("ex") => "ex",
+			var r when r.Contains("rare") => "rare",
+			_ => "common"
+		};
+	}
+
+	public async ValueTask DisposeAsync()
+	{
+		if (_module != null)
+		{
+			if (_isCameraInitialized)
+			{
+				await _module.InvokeVoidAsync("stopCamera");
+			}
+			await _module.DisposeAsync();
+		}
+	}
+
+	private void SelectCard(PokemonCard card)
+	{
+		selectedCard = card;
+		cardImageUrl = selectedCard.Images?.Large?.ToString()
+				?? selectedCard.Images?.Small?.ToString()
+				?? "";
+		cardName = card.Name;
+		cardNumber = card.Number;
+		cardSeries = card.Set?.Name ?? "";
+		cardRarity = card.Rarity ?? "";
+		cardPrice = "–";
+	}
+	
+} 
+

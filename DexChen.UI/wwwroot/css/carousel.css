@@ -1,0 +1,263 @@
+/* Styles pour le carousel */
+
+/* Container principal */
+.carousel-container {
+    position: relative;
+    margin: 0 auto;
+    max-width: 1200px;
+    height: 450px;
+    display: flex;
+    justify-content: center;
+    perspective: 1000px;
+    overflow: visible;
+}
+
+/* Contrôles du carousel */
+.carousel-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+    background-color: rgba(37, 37, 66, 0.5);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--border-radius-xl);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: var(--shadow-sm);
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.prev-btn, 
+.next-btn {
+    background: linear-gradient(135deg, var(--primary), var(--primaryDark));
+    border: none;
+    color: var(--textPrimary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.prev-btn:hover, 
+.next-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md), 0 0 10px rgba(67, 97, 238, 0.3);
+}
+
+.prev-btn:disabled, 
+.next-btn:disabled {
+    background: rgba(55, 55, 80, 0.5);
+    color: var(--textSecondary);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.pagination {
+    font-family: var(--font-primary);
+    color: var(--textSecondary);
+    font-size: 0.9rem;
+    margin: 0 var(--spacing-md);
+    min-width: 40px;
+    text-align: center;
+}
+
+.carousel-auto-toggle {
+    margin-left: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.carousel-auto-toggle input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 34px;
+    height: 18px;
+    background-color: rgba(37, 37, 66, 0.8);
+    border-radius: 25px;
+    position: relative;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-auto-toggle input[type="checkbox"]:checked {
+    background-color: var(--primary);
+}
+
+.carousel-auto-toggle input[type="checkbox"]::before {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: var(--textPrimary);
+    top: 2px;
+    left: 2px;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.carousel-auto-toggle input[type="checkbox"]:checked::before {
+    left: calc(100% - 16px);
+}
+
+.carousel-auto-toggle label {
+    font-size: 0.8rem;
+    color: var(--textSecondary);
+    cursor: pointer;
+    font-family: var(--font-secondary);
+}
+
+/* Indicateurs du carousel */
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-md);
+}
+
+.carousel-indicators .indicator {
+    width: 10px;
+    height: 10px;
+    background-color: rgba(37, 37, 66, 0.8);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.carousel-indicators .indicator:hover {
+    background-color: var(--primaryLight);
+    transform: scale(1.2);
+}
+
+.carousel-indicators .indicator.active {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    width: 24px;
+    border-radius: 5px;
+}
+
+/* Cartes */
+.card-preview {
+    position: absolute;
+    width: 300px;
+    height: 420px;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.5s ease;
+    opacity: 0;
+    transform: translateX(100px) scale(0.8) rotateY(20deg);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.card-preview.active {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateY(0);
+    z-index: 10;
+    pointer-events: auto;
+    box-shadow: 
+        var(--shadow-lg),
+        0 15px 30px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(67, 97, 238, 0.3);
+}
+
+.card-preview.active ~ .card-preview {
+    transform: translateX(100px) scale(0.8) rotateY(-20deg);
+    opacity: 0.4;
+    z-index: 9;
+}
+
+.card-preview.active ~ .card-preview ~ .card-preview {
+    transform: translateX(150px) scale(0.7) rotateY(-30deg);
+    opacity: 0.2;
+    z-index: 8;
+}
+
+.card-preview:not(.active):nth-child(n+4) {
+    opacity: 0;
+    transform: translateX(200px) scale(0.6);
+}
+
+.card-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.card-preview.active:hover img {
+    transform: scale(1.05);
+}
+
+/* Loading */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    gap: var(--spacing-md);
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(67, 97, 238, 0.3);
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-container p {
+    color: var(--textSecondary);
+    font-family: var(--font-secondary);
+    font-size: 1rem;
+}
+
+.no-cards-message {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--textSecondary);
+    font-family: var(--font-secondary);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Style pour appareils mobiles */
+@media (max-width: 768px) {
+    .carousel-container {
+        height: 380px;
+    }
+
+    .card-preview {
+        width: 240px;
+        height: 336px;
+    }
+    
+    .carousel-controls {
+        flex-wrap: wrap;
+        padding: var(--spacing-xs);
+    }
+    
+    .carousel-auto-toggle {
+        margin-left: 0;
+        margin-top: var(--spacing-xs);
+        width: 100%;
+        justify-content: center;
+    }
+} 

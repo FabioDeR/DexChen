@@ -4,7 +4,7 @@ using Supabase.Postgrest.Models;
 namespace DexChen.Domain.Entities;
 
 [Table("cards")]
-public class Card : BaseModel
+public class CardDexChen : BaseModel
 {
     [PrimaryKey("id", false)]
     public long Id { get; set; }

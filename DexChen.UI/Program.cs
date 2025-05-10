@@ -6,26 +6,29 @@ using DexChen.UI.Services.Contract;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using PokemonTcgSdk.Standard.Infrastructure.HttpClients;
 using Supabase;
 using System.Net.Http.Json;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
-
-// 🔹 HttpClient principal
-builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-
-// 🔹 LocalStorage (nécessaire pour la session Supabase)
-builder.Services.AddBlazoredLocalStorage();
-
-
 // 🔹 Charger la config Supabase depuis appsettings.json
 var http = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
 var config = await http.GetFromJsonAsync<Dictionary<string, string>>("appsettings.json");
 
 var url = config["SUPABASE_URL"];
 var key = config["SUPABASE_KEY"];
+var pokemonKey = config["POKEMONCARDSAPI_KEY"];
+// 🔹 HttpClient principal
+builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddScoped<PokemonApiClient>(options => new PokemonApiClient(pokemonKey));
+
+// 🔹 LocalStorage (nécessaire pour la session Supabase)
+builder.Services.AddBlazoredLocalStorage();
+
+
+
 
 // ---------- BLAZOR AUTH
 
@@ -52,6 +55,10 @@ builder.Services.AddScoped<Client>(
 
 // 🔹 Services et providers liés à l'authentification
 builder.Services.AddScoped<IAuthService,AuthService>();
+
+// 🔹 Services liés aux cartes Pokémon
+builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<IScanService, ScanService>();
 
 // ✅ Lancer l'application
 await builder.Build().RunAsync();

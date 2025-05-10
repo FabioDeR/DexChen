@@ -1,0 +1,572 @@
+/* Styles pour la page de scan des cartes Pokémon */
+
+/* Container principal */
+.scan-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+    min-height: calc(100vh - 140px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Écran initial */
+.scan-initial {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background-color: rgba(26, 26, 46, 0.5);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: var(--shadow-lg);
+    animation: fadeIn 0.5s ease-out;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.scan-header {
+    margin-bottom: var(--spacing-xl);
+}
+
+.scan-title {
+    font-family: var(--font-primary);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.02em;
+}
+
+.scan-subtitle {
+    font-family: var(--font-secondary);
+    color: var(--textSecondary);
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.scan-options {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xl);
+    width: 100%;
+    margin-top: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.scan-option-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-xl);
+    border-radius: var(--border-radius-lg);
+    background-color: rgba(37, 37, 66, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all var(--transition-normal);
+    cursor: pointer;
+    width: 220px;
+    position: relative;
+    overflow: hidden;
+}
+
+.scan-option-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 70%);
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+    z-index: 1;
+}
+
+.scan-option-btn:hover::before {
+    transform: translateX(100%);
+}
+
+.scan-option-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.camera-btn {
+    color: var(--textPrimary);
+    border: none;
+    background: linear-gradient(135deg, var(--primary), var(--primaryDark));
+}
+
+.camera-btn:hover {
+    background: linear-gradient(135deg, var(--primaryDark), var(--primary));
+}
+
+.upload-btn {
+    color: var(--textPrimary);
+    background: rgba(26, 26, 46, 0.8);
+    border: 1px solid var(--primary);
+}
+
+.option-icon-container {
+    font-size: 3rem;
+    position: relative;
+    z-index: 2;
+}
+
+.option-separator {
+    color: var(--textSecondary);
+    font-family: var(--font-secondary);
+    font-size: 1.1rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.option-separator::before,
+.option-separator::after {
+    content: '';
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    width: 30px;
+    margin: 0 var(--spacing-sm);
+}
+
+.hidden-input {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+/* Mode caméra */
+.camera-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    gap: var(--spacing-lg);
+}
+
+.camera-header {
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.camera-header h2 {
+    font-family: var(--font-primary);
+    font-size: 1.8rem;
+    margin-bottom: var(--spacing-xs);
+    color: var(--textPrimary);
+}
+
+.camera-header p {
+    color: var(--textSecondary);
+    font-family: var(--font-secondary);
+}
+
+.video-container {
+    width: 100%;
+    aspect-ratio: 4/3;
+    position: relative;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    background-color: #000;
+}
+
+.camera-feed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.camera-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-frame {
+    width: 70%;
+    height: 70%;
+    border: 2px dashed var(--primary);
+    border-radius: var(--border-radius-sm);
+    box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.3);
+    transition: all var(--transition-fast);
+}
+
+.camera-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    gap: var(--spacing-md);
+}
+
+.control-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    background-color: rgba(37, 37, 66, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--textPrimary);
+    font-family: var(--font-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.cancel-btn {
+    color: var(--textSecondary);
+}
+
+.cancel-btn:hover {
+    color: var(--textPrimary);
+    background-color: rgba(247, 37, 133, 0.2);
+}
+
+.capture-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    padding: 0;
+}
+
+.capture-btn i {
+    font-size: 2rem;
+}
+
+.capture-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(67, 97, 238, 0.4);
+}
+
+.switch-btn:hover {
+    background-color: rgba(37, 37, 66, 0.9);
+}
+
+/* Mode aperçu */
+.preview-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 800px;
+    margin: 0 auto;
+    gap: var(--spacing-lg);
+}
+
+.preview-header {
+    text-align: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.preview-header h2 {
+    font-family: var(--font-primary);
+    font-size: 1.8rem;
+    margin-bottom: var(--spacing-xs);
+    color: var(--textPrimary);
+}
+
+.preview-header p {
+    color: var(--textSecondary);
+    font-family: var(--font-secondary);
+}
+
+.image-preview {
+    width: 100%;
+    max-width: 500px;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.image-preview img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.preview-controls {
+    display: flex;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+}
+
+.confirm-btn {
+    background: linear-gradient(135deg, var(--primary), var(--primaryDark));
+    min-width: 120px;
+}
+
+.confirm-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Chargement */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: var(--spacing-lg);
+    text-align: center;
+}
+
+.loading-container .spinner {
+    width: 60px;
+    height: 60px;
+    border-width: 5px;
+}
+
+.loading-container h2 {
+    font-family: var(--font-primary);
+    font-size: 1.8rem;
+    color: var(--textPrimary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.loading-container p {
+    color: var(--textSecondary);
+    font-family: var(--font-secondary);
+}
+
+/* Résultats */
+.result-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: rgba(26, 26, 46, 0.5);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: var(--shadow-lg);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.result-header {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.result-header h2 {
+    font-family: var(--font-primary);
+    font-size: 2rem;
+    color: var(--textPrimary);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.result-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+    align-items: center;
+}
+
+.card-image-container {
+    position: relative;
+    text-align: center;
+}
+
+.card-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    transition: transform var(--transition-normal);
+}
+
+.card-image:hover {
+    transform: scale(1.02) rotate(1deg);
+}
+
+.card-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.card-name {
+    font-family: var(--font-primary);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--textPrimary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.card-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-label {
+    color: var(--textSecondary);
+    font-family: var(--font-secondary);
+    font-size: 0.9rem;
+}
+
+.info-value {
+    color: var(--textPrimary);
+    font-family: var(--font-primary);
+    font-weight: 500;
+}
+
+.card-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.rarity-badge {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.rarity-badge.ultra-rare {
+    background-color: rgba(247, 37, 133, 0.2);
+    color: #F72585;
+}
+
+.rarity-badge.holo, .rarity-badge.ex {
+    background-color: rgba(67, 97, 238, 0.2);
+    color: #4361EE;
+}
+
+.rarity-badge.rare {
+    background-color: rgba(76, 201, 240, 0.2);
+    color: #4CC9F0;
+}
+
+.rarity-badge.common {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--textSecondary);
+}
+
+.card-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.scan-again {
+    background: linear-gradient(135deg, var(--primary), var(--primaryDark));
+    color: var(--textPrimary);
+    padding: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+}
+
+.scan-again:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.add-collection {
+    background: rgba(37, 37, 66, 0.5);
+    color: var(--textPrimary);
+    padding: var(--spacing-md);
+    border: 1px solid var(--primary);
+}
+
+.add-collection:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.add-collection:not(:disabled):hover {
+    background-color: var(--surfaceHover);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .scan-container {
+        padding: var(--spacing-md);
+    }
+    
+    .scan-title {
+        font-size: 2rem;
+    }
+    
+    .scan-options {
+        flex-direction: column;
+        gap: var(--spacing-lg);
+    }
+    
+    .scan-option-btn {
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    .option-separator {
+        margin: var(--spacing-xs) 0;
+    }
+    
+    .camera-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .result-content {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+    
+    .card-image-container {
+        order: -1;
+    }
+    
+    .card-image {
+        max-width: 80%;
+    }
+    
+    .card-name {
+        font-size: 1.8rem;
+        text-align: center;
+    }
+} 

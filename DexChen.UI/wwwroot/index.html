@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="css/home.css" />
     <link rel="stylesheet" href="css/main-layout.css" />
     <link rel="stylesheet" href="css/error-pages.css" />
+    <link rel="stylesheet" href="css/carousel.css" />
+    <link rel="stylesheet" href="css/scan.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -41,7 +43,7 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
-    
+
     <!-- Script pour gérer la hauteur de la fenêtre sur mobile -->
     <script>
         // Fix pour iOS qui gère mal les vh
@@ -49,17 +51,23 @@
             let vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
         }
-        
+
         // Exécuter au chargement
         window.addEventListener('load', setVH);
-        
+
         // Exécuter au redimensionnement
         window.addEventListener('resize', setVH);
-        
+
         // Exécuter après changement d'orientation
         window.addEventListener('orientationchange', () => {
             setTimeout(setVH, 100);
         });
+    </script>
+    <script>
+        window.getQueryParam = function (param) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(param);
+        }
     </script>
 </body>
 
